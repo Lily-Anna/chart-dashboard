@@ -17,7 +17,7 @@
         </mat-card-header>
         <mat-card-content class="dashboard-card-content">
           <div style=" width:100%; height:100%; display: flex;flex-wrap: wrap"> 
-            <mat-select [(ngModel)]="card.chartType" (ngModelChange)="onChartTypeChange(card, $event)">
+            <mat-select [(ngModel)]="card.chartType" >
               <mat-option *ngFor="let type of chartTypes" [value]="type">{{ type }}</mat-option>
             </mat-select>
             <canvas appDashboardWidget [data]="card.data" [chartType]="card.chartType"></canvas>
