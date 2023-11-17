@@ -8,8 +8,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ChartsModule } from '../charts/charts.module';
-
-
+import { FormsModule } from '@angular/forms';
+import {MatSelectModule} from '@angular/material/select';
 @NgModule({
   declarations: [
     DashboardComponent,
@@ -17,9 +17,11 @@ import { ChartsModule } from '../charts/charts.module';
   ],
   imports: [
     CommonModule,
+    FormsModule,
     MatGridListModule,
     MatCardModule,
     MatMenuModule,
+    MatSelectModule,
     MatIconModule,
     MatButtonModule,
     ChartsModule

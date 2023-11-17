@@ -1,55 +1,83 @@
 import { Directive, ElementRef, Input, OnInit } from '@angular/core';
-import { BarController,ChartType, BarElement, CategoryScale, Chart, Decimation, Filler, Legend, Title, Tooltip,LinearScale, LineController, LineElement, PointElement } from 'chart.js';
-
-
+import { Chart, registerables, ChartType, ChartConfiguration } from 'chart.js';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Directive({
-  selector: '[appDashboardWidget]'
+  selector: '[appDashboardWidget]',
 })
-export class DashboardWidgetDirective  implements OnInit{
+export class DashboardWidgetDirective implements OnInit {
+  @Input() nameChart: string = 'example';
+  @Input() data: number[] = [];
   @Input() chartType: ChartType = 'bar'; // По умолчанию тип диаграммы - 'bar'
-  
-  constructor(private elementRef: ElementRef) { 
-    
-    Chart.register(BarElement, BarController,LineController, PointElement,LineElement, CategoryScale, Decimation, Filler, Legend, Title, Tooltip, LinearScale);
+
+  private destroy$ = new Subject<void>();
+
+  constructor(private elementRef: ElementRef) {
+    Chart.register(...registerables);
   }
-  ngOnInit () {
+
+  ngOnInit() {
+
+    this.updateChart();
+
+    // Подписка на изменение типа графика
+    this.chartType$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((chartType) => {
+        this.chartType = chartType;
+        this.updateChart();
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private get chartType$(): Subject<ChartType> {
+    // Получение потока для изменения типа графика
+    const chartType$ = new Subject<ChartType>();
+
+    // Обработка изменения типа графика
+    chartType$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((chartType) => {
+        this.chartType = chartType;
+        this.updateChart();
+      });
+
+    return chartType$;
+  }
+
+  private updateChart() {
     const canvas = this.elementRef.nativeElement;
     const ctx = canvas.getContext('2d');
-    new Chart(ctx, {
-      type:  this.chartType,
+
+    const chart = new Chart(ctx, this.getChartConfiguration());
+    chart.update();
+  }
+
+  private getChartConfiguration(): ChartConfiguration {
+    return {
+      type: this.chartType,
       data: {
         labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-        datasets: [{
-          label: '# of Votes',
-          data: [12, 19, 3, 5, 2, 3],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)'
-          ],
-          borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-          ],
-          borderWidth: 1
-        }]
+        datasets: [
+          {
+            label: this.nameChart,
+            data: this.data,
+            borderWidth: 1,
+          },
+        ],
       },
       options: {
         scales: {
           y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  
+            beginAtZero: true,
+          },
+        },
+      },
+    };
   }
 }
