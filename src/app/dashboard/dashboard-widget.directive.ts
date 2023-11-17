@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input, OnInit } from '@angular/core';
+import { Directive, ElementRef, Input, OnInit, SimpleChanges } from '@angular/core';
 import { Chart, registerables, ChartType, ChartConfiguration } from 'chart.js';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -49,7 +49,11 @@ export class DashboardWidgetDirective implements OnInit {
 
     return chartType$;
   }
-
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['nameChart'] || changes['data'] || changes['chartType']) {
+      this.updateChart();
+    }
+  }
   private updateChart() {
     const canvas = this.elementRef.nativeElement;
     const ctx = canvas.getContext('2d');
